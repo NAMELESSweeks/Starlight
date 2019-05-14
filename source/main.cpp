@@ -124,25 +124,12 @@ void handleStaticMem(Cmn::StaticMem *staticMem){
         mTextWriter->printf("Loaded stage: %s\n", stageName->mCharPtr);
     }
     
-    Cmn::PlayerInfoAry *playerInfoAry = Collector::PlayerInfoAry;
-    if(playerInfoAry != NULL){
-        mTextWriter->printf("PlayerInfoAry ptr: 0x%x\n", playerInfoAry);
-
-        /*if(mode == Modes::PLAYER_SWITCHER){
-            for(int i = 1; i < 0xA; i++){
-                Cmn::PlayerInfo *info = playerInfoAry->infos[i];
-                Cmn::PlayerInfoUtil::setPlayerInfoByDummy(info, Cmn::Def::Mode::cNone);
-            }
-        }*/
-
-        Cmn::PlayerInfo* playerInfo = Collector::FirstPlayer;
-        if(playerInfo != NULL){
-            mTextWriter->printf("PlayerInfo[0] ptr: 0x%x\n", playerInfo);
-            mTextWriter->printf("PlayerInfo[0] weapon ID: 0x%x\n", playerInfo->weapon.id);
-            mTextWriter->printf("PlayerInfo[0] weapon turf inked: 0x%x\n", playerInfo->weapon.turfInked);
-
-            mTextWriter->printf("PlayerInfo[0] unk FC: 0x%x\n", playerInfo->dwordFC);
-        }
+    Cmn::PlayerInfo* playerInfo = Collector::FirstPlayer;
+    if(playerInfo != NULL){
+        mTextWriter->printf("PlayerInfo[0] ptr: 0x%x\n", playerInfo);
+        mTextWriter->printf("PlayerInfo[0] weapon ID: 0x%x\n", playerInfo->weapon.id);
+        mTextWriter->printf("PlayerInfo[0] weapon turf inked: 0x%x\n", playerInfo->weapon.turfInked);
+        mTextWriter->printf("PlayerInfo[0] unk FC: 0x%x\n", playerInfo->dwordFC);
     }
 }
 
@@ -246,14 +233,10 @@ void handlePlayerControl(Cmn::PlayerCtrl* playerCtrl){
 }
 
 void handleMushDataHolder(Cmn::MushDataHolder* mushDataHolder){
-    mTextWriter->printf("MushDataHolder ptr: 0x%x\n", mushDataHolder);
-    mTextWriter->printf("MushWeaponInfo ptr: 0x%x\n", mushDataHolder->mushWeaponInfo);
-    
     static bool entered = false;
-
     if(!entered){
         for(int i = 0; i < 29001; i++){
-            Cmn::WeaponData* data = mushDataHolder->mushWeaponInfo->getById(Cmn::Def::WeaponKind::cMain, i);
+            Cmn::WeaponData* data = Collector::MushWeaponInfo->getById(Cmn::Def::WeaponKind::cMain, i);
             if(data != NULL){
                 data->price = 0;
                 data->rank = 0;
@@ -263,7 +246,7 @@ void handleMushDataHolder(Cmn::MushDataHolder* mushDataHolder){
         }
 
         for(int i = 0; i < 230; i++){
-            Cmn::MushMapInfo::Data* mapData = mushDataHolder->mushMapInfo->getByMushOrder(i);
+            Cmn::MushMapInfo::Data* mapData = Collector::MushMapInfo->getByMushOrder(i);
             if(mapData != NULL){
                 mapData->envHour = 2;
             }
