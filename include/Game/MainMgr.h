@@ -7,6 +7,8 @@
 namespace Game {
     class MainMgr : Cmn::Actor{
         public:
+        static Game::MainMgr* sInstance;
+
         __int64 scene; //Lp::Sys::Scene *scene;
         _QWORD gfxLayer3d;
         _QWORD qword378;
@@ -32,6 +34,6 @@ namespace Game {
         _QWORD qword460;
         _BYTE byte468;
 
-        unsigned int getPaintGameFrame();
+        unsigned int getPaintGameFrame() const;
     };
 };

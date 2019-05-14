@@ -9,26 +9,38 @@ extern "C" void __custom_init(void) {}
 // DT_FINI here for completeness.
 extern "C" void __custom_fini(void) {}
 
-static __int64 lastInputs = 0x200;
 static agl::DrawContext *mDrawContext;
 static sead::TextWriter *mTextWriter;
-static Lp::Sys::Ctrl *mController;
-static Game::Player* mCurrentPlayer;
+static SimpleMenu menu;
 static int mode;
 static bool showMenu;
+static bool init;
 
 // hook for gsys::SystemTask::invokeDrawTV_
 void render(agl::DrawContext *drawContext, sead::TextWriter *textWriter)
 {
     mDrawContext = drawContext;
     mTextWriter = textWriter;
-    mController =  Lp::Utl::getCtrl(0);
 
-    if(isTriggered(mController, Buttons::Minus1))
+    if(!init){
+        Collector::init();
+
+        SimpleMenuEntry *entry1 = (SimpleMenuEntry*) malloc(sizeof(SimpleMenuEntry));
+        SimpleMenuEntry *entry2 = (SimpleMenuEntry*) malloc(sizeof(SimpleMenuEntry));
+        menu.entries.push_front(entry1);
+        menu.entries.push_front(entry2);
+    }
+    Collector::collect();
+    init = true;
+
+    if(Collector::Control.isPressed(Controller::Buttons::LStick))
         showMenu = !showMenu;
 
     if(showMenu){
-        drawBackground();
+        
+        menu.update();
+        menu.render(mTextWriter);
+        /*drawBackground();
         
         textWriter->setScaleFromFontHeight(20);
         sead::TextWriter::setupGraphics(drawContext); // re-setup context
@@ -37,11 +49,15 @@ void render(agl::DrawContext *drawContext, sead::TextWriter *textWriter)
         textWriter->printf("This is a demonstration of C/C++ code running in the context of a Switch game!\n");
         textWriter->printf("Credit to shibboleet, Khangaroo, Thog, Retr0id, and the libnx maintainers!\n");
 
-        if(isTriggered(mController, Buttons::RStick))
+        if(Collector::Control.isPressed(Controller::Buttons::RStick))
             mode++;
         if(mode > Modes::END)
             mode = 0;
         textWriter->printf("Current mode: %s\n", modeToText((Modes)mode));
+
+        Game::MainMgr* mainMgr = Game::MainMgr::sInstance;
+        if(mainMgr != NULL)
+            handleMainMgr(mainMgr);
 
         Cmn::StaticMem *staticMem = Cmn::StaticMem::sInstance;
         if(staticMem != NULL)
@@ -61,8 +77,10 @@ void render(agl::DrawContext *drawContext, sead::TextWriter *textWriter)
         Cmn::MushDataHolder* mushData = Cmn::MushDataHolder::sInstance;
         if(mushData != NULL)
             handleMushDataHolder(mushData);
+            */
     }
-    lastInputs = mController->data;
+    
+    Collector::Control.update();
 }
 
 void drawBackground(){
@@ -94,6 +112,11 @@ void drawBackground(){
     agl::utl::DevTools::drawTriangleImm(mDrawContext, p3, p4, p2, c);
 }
 
+void handleMainMgr(Game::MainMgr* mainMgr){
+    unsigned int paintGameFrame = mainMgr->getPaintGameFrame();
+    Game::PaintUtl::requestAllPaintFloor(paintGameFrame, Cmn::Def::Team::Alpha);
+}
+
 void handleStaticMem(Cmn::StaticMem *staticMem){
     mTextWriter->printf("StaticMem ptr: 0x%x\n", staticMem);
     sead::SafeStringBase<char> *stageName = &staticMem->stageName;
@@ -101,7 +124,7 @@ void handleStaticMem(Cmn::StaticMem *staticMem){
         mTextWriter->printf("Loaded stage: %s\n", stageName->mCharPtr);
     }
     
-    Cmn::PlayerInfoAry *playerInfoAry = staticMem->playerInfoArray;
+    Cmn::PlayerInfoAry *playerInfoAry = Collector::PlayerInfoAry;
     if(playerInfoAry != NULL){
         mTextWriter->printf("PlayerInfoAry ptr: 0x%x\n", playerInfoAry);
 
@@ -112,7 +135,7 @@ void handleStaticMem(Cmn::StaticMem *staticMem){
             }
         }*/
 
-        Cmn::PlayerInfo* playerInfo = playerInfoAry->infos[0];
+        Cmn::PlayerInfo* playerInfo = Collector::FirstPlayer;
         if(playerInfo != NULL){
             mTextWriter->printf("PlayerInfo[0] ptr: 0x%x\n", playerInfo);
             mTextWriter->printf("PlayerInfo[0] weapon ID: 0x%x\n", playerInfo->weapon.id);
@@ -124,26 +147,24 @@ void handleStaticMem(Cmn::StaticMem *staticMem){
 }
 
 void handlePlayerMgr(Game::PlayerMgr* playerMgr){
-    Game::Player *player = playerMgr->getControlledPerformer();
-    mCurrentPlayer = player;
-    if(player != NULL)
+    if(Collector::ControlledPlayer != NULL)
     {
-        mTextWriter->printf("Controlled player ptr: 0x%x\n", player);
-        Game::PlayerMotion *playerMotion = player->motion;
+        mTextWriter->printf("Controlled player ptr: 0x%x\n", Collector::ControlledPlayer);
+        Game::PlayerMotion *playerMotion = Collector::ControlledPlayer->motion;
 
         mTextWriter->printf("PlayerMotion ptr: 0x%x\n", playerMotion);
 
         if(mode == Modes::EVENT_VIEWER) {
             static long scroll = 0;
 
-            if(isTriggered(mController, Buttons::UpDpad))
+            if(Collector::Control.isPressed(Controller::Buttons::UpDpad))
                 scroll++;
-            if(isTriggered(mController, Buttons::DownDpad))
+            if(Collector::Control.isPressed(Controller::Buttons::DownDpad))
                 scroll--;
 
-            if(isTriggered(mController, Buttons::LeftDpad))
+            if(Collector::Control.isPressed(Controller::Buttons::LeftDpad))
                 scroll-=0x10;
-            if(isTriggered(mController, Buttons::RightDpad))
+            if(Collector::Control.isPressed(Controller::Buttons::RightDpad))
                 scroll+=0x10;
 
             if(scroll < 0)
@@ -151,7 +172,7 @@ void handlePlayerMgr(Game::PlayerMgr* playerMgr){
 
             mTextWriter->printf("Event ID: 0x%x\n", scroll);
 
-            if(isTriggered(mController, Buttons::LStick))
+            if(Collector::Control.isPressed(Controller::Buttons::LStick))
                 playerMotion->startEventAnim((Game::PlayerMotion::AnimID) scroll, 0, 1.0);
 
         } else if(mode == Modes::PLAYER_SWITCHER){
@@ -162,9 +183,9 @@ void handlePlayerMgr(Game::PlayerMgr* playerMgr){
             signed int currentPlayer = playerMgr->currentPlayerIndex;
             mTextWriter->printf("Current player: %i\n", currentPlayer);
 
-            if(isTriggered(mController, Buttons::UpDpad))
+            if(Collector::Control.isPressed(Controller::Buttons::UpDpad))
                 currentPlayer++;
-            if(isTriggered(mController, Buttons::DownDpad))
+            if(Collector::Control.isPressed(Controller::Buttons::DownDpad))
                 currentPlayer--;
             if(currentPlayer < 0)
                 currentPlayer = playerMgr->validAmountOfPlayers;
@@ -191,9 +212,9 @@ void handlePlayerControl(Cmn::PlayerCtrl* playerCtrl){
     }
 
     static bool entered = false;
-    if(mode == 1 && mCurrentPlayer != NULL){
+    if(mode == 1 && Collector::ControlledPlayer != NULL){
         static float x, y, z;
-        sead::Vector3<float> *playerPos = &mCurrentPlayer->position;
+        sead::Vector3<float> *playerPos = &Collector::ControlledPlayer->position;
         if(!entered){
             x = playerPos->mX;
             y = playerPos->mY;
@@ -202,17 +223,17 @@ void handlePlayerControl(Cmn::PlayerCtrl* playerCtrl){
 
         int speed = 10;
 
-        if(mController->data & Buttons::UpDpad)
+        if(Collector::Control.isHeld(Controller::Buttons::UpDpad))
             y+=speed;
-        if(mController->data & Buttons::DownDpad)
+        if(Collector::Control.isHeld(Controller::Buttons::DownDpad))
             y-=speed;
-        if(mController->data & Buttons::LeftDpad)
+        if(Collector::Control.isHeld(Controller::Buttons::LeftDpad))
             x+=speed;
-        if(mController->data & Buttons::RightDpad)
+        if(Collector::Control.isHeld(Controller::Buttons::RightDpad))
             x-=speed;
-        if(mController->data & Buttons::RightRStickOrdinal)
+        if(Collector::Control.isHeld(Controller::Buttons::RightRStickOrdinal))
             z+=speed;
-        if(mController->data & Buttons::LeftRStickOrdinal)
+        if(Collector::Control.isHeld(Controller::Buttons::LeftRStickOrdinal))
             z-=speed;
 
         playerPos->mX = x;
@@ -251,11 +272,6 @@ void handleMushDataHolder(Cmn::MushDataHolder* mushDataHolder){
         entered = true;
     }
 
-}
-
-bool isTriggered(Lp::Sys::Ctrl *controller, unsigned long id){
-    bool buttonHeld = controller->data & id;
-    return buttonHeld & !(controller->data & lastInputs & id);
 }
 
 char const* modeToText(Modes mode){
