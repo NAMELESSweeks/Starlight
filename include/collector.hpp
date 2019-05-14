@@ -20,7 +20,7 @@ class Collector {
     static Cmn::PlayerCtrl* PlayerCtrlInstance;
     static Cmn::PlayerInfoAry* PlayerInfoAry;
     static Cmn::PlayerInfo* Collector::FirstPlayer;
-    static Cmn::Player* Collector::ControlledPlayer;
+    static Game::Player* Collector::ControlledPlayer;
 
     static void init();
     static void collect();
