@@ -26,7 +26,7 @@ class Collector {
 
     // Player Information
     static Game::Player* ControlledPlayer;
-    static Cmn::PlayerInfo* FirstPlayer;
+    static Cmn::PlayerInfo* ControlledPlayerInfo;
     static Cmn::PlayerCtrl* PlayerCtrlInstance;
     static Cmn::PlayerInfoAry* PlayerInfoAry;
 

@@ -119,12 +119,12 @@ void handleMainMgr(Game::MainMgr* mainMgr){
 
 void handleStaticMem(Cmn::StaticMem *staticMem){
     mTextWriter->printf("StaticMem ptr: 0x%x\n", staticMem);
-    sead::SafeStringBase<char> *stageName = &staticMem->stageName;
+    sead::SafeStringBase<char> *stageName = &staticMem->mMapFileName1;
     if(stageName->mCharPtr != NULL){
         mTextWriter->printf("Loaded stage: %s\n", stageName->mCharPtr);
     }
     
-    Cmn::PlayerInfo* playerInfo = Collector::FirstPlayer;
+    Cmn::PlayerInfo* playerInfo = Collector::ControlledPlayerInfo;
     if(playerInfo != NULL){
         mTextWriter->printf("PlayerInfo[0] ptr: 0x%x\n", playerInfo);
         mTextWriter->printf("PlayerInfo[0] weapon ID: 0x%x\n", playerInfo->weapon.id);
@@ -248,7 +248,7 @@ void handleMushDataHolder(Cmn::MushDataHolder* mushDataHolder){
         for(int i = 0; i < 230; i++){
             Cmn::MushMapInfo::Data* mapData = Collector::MushMapInfo->getByMushOrder(i);
             if(mapData != NULL){
-                mapData->envHour = 2;
+                mapData->mEnvHour = 2;
             }
         }
 
