@@ -31,7 +31,7 @@ enum Modes {
     NONE, FLY, EVENT_VIEWER, INPUT_VIEWER,  PLAYER_SWITCHER, END
 };
 
-void render(agl::DrawContext *drawContext, sead::TextWriter *textWriter);
+void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter);
 bool isTriggered(Lp::Sys::Ctrl *controller, unsigned long id);
 
 void drawBackground();
@@ -40,6 +40,7 @@ void handleStaticMem(Cmn::StaticMem *staticMem);
 void handlePlayerMgr(Game::PlayerMgr* playerMgr);
 void handlePlayerControl(Cmn::PlayerCtrl* playerCtrl);
 void handleMushDataHolder(Cmn::MushDataHolder* mushDataHolder);
+void handleMainMgr(Game::MainMgr* mainMgr);
 
 char const* modeToText(Modes);
 

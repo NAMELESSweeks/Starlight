@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.h"
+#include "Weapon.h"
 
 namespace Cmn {
     namespace Def {

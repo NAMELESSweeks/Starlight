@@ -14,10 +14,10 @@ static sead::TextWriter *mTextWriter;
 static SimpleMenu menu;
 static int mode;
 static bool showMenu;
-static bool init;
+static bool init = false;
 
 // hook for gsys::SystemTask::invokeDrawTV_
-void render(agl::DrawContext *drawContext, sead::TextWriter *textWriter)
+void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter)
 {
     mDrawContext = drawContext;
     mTextWriter = textWriter;
@@ -33,13 +33,19 @@ void render(agl::DrawContext *drawContext, sead::TextWriter *textWriter)
     Collector::collect();
     init = true;
 
-    if(Collector::Control.isPressed(Controller::Buttons::LStick))
+    if(Collector::Control.isPressed(Controller::Buttons::Minus1))
         showMenu = !showMenu;
 
+    textWriter->printf("showMenu: 0x%x", showMenu);
+
     if(showMenu){
+        drawBackground();
+        textWriter->setScaleFromFontHeight(20);
+        sead::TextWriter::setupGraphics(drawContext); // re-setup context
+        textWriter->printf("Starlight\n");
         
         menu.update();
-        menu.render(mTextWriter);
+        //menu.render(mTextWriter);
         /*drawBackground();
         
         textWriter->setScaleFromFontHeight(20);
@@ -119,7 +125,7 @@ void handleMainMgr(Game::MainMgr* mainMgr){
 
 void handleStaticMem(Cmn::StaticMem *staticMem){
     mTextWriter->printf("StaticMem ptr: 0x%x\n", staticMem);
-    sead::SafeStringBase<char> *stageName = &staticMem->mMapFileName1;
+    sead::BufferedSafeStringBase<char> *stageName = &staticMem->mMapFileName1;
     if(stageName->mCharPtr != NULL){
         mTextWriter->printf("Loaded stage: %s\n", stageName->mCharPtr);
     }
@@ -127,8 +133,6 @@ void handleStaticMem(Cmn::StaticMem *staticMem){
     Cmn::PlayerInfo* playerInfo = Collector::ControlledPlayerInfo;
     if(playerInfo != NULL){
         mTextWriter->printf("PlayerInfo[0] ptr: 0x%x\n", playerInfo);
-        mTextWriter->printf("PlayerInfo[0] weapon ID: 0x%x\n", playerInfo->weapon.id);
-        mTextWriter->printf("PlayerInfo[0] weapon turf inked: 0x%x\n", playerInfo->weapon.turfInked);
         mTextWriter->printf("PlayerInfo[0] unk FC: 0x%x\n", playerInfo->dwordFC);
     }
 }
@@ -238,10 +242,10 @@ void handleMushDataHolder(Cmn::MushDataHolder* mushDataHolder){
         for(int i = 0; i < 29001; i++){
             Cmn::WeaponData* data = Collector::MushWeaponInfo->getById(Cmn::Def::WeaponKind::cMain, i);
             if(data != NULL){
-                data->price = 0;
-                data->rank = 0;
-                data->specialCost = 0;
-                data->lock = 0;
+                data->mPrice = 0;
+                data->mRank = 0;
+                data->mSpecialCost = 0;
+                data->mLockType = Cmn::WeaponData::LockType::NotForSale;
             }
         }
 

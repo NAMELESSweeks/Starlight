@@ -22,10 +22,11 @@ Cmn::MushWeaponInfo* Collector::MushWeaponInfo;
 Cmn::MushMapInfo* Collector::MushMapInfo;
 
 void Collector::init() {
-    Control.mController = Lp::Utl::getCtrl(0);
+    
 }
 
 void Collector::collect(){
+    Control.mController = Lp::Utl::getCtrl(0);
     MainMgrInstance = Game::MainMgr::sInstance;
     StaticMemInstance = Cmn::StaticMem::sInstance;
     PlayerMgrInstance = Game::PlayerMgr::sInstance;
@@ -34,7 +35,7 @@ void Collector::collect(){
 
     if(StaticMemInstance){
         PlayerInfoAry = StaticMemInstance->mPlayerInfoAry;
-        ControlledPlayerInfo = StaticMemInstance->mPlayerInfo;
+        ControlledPlayerInfo = &StaticMemInstance->mPlayerInfo;
     } else {
         PlayerInfoAry = NULL;
     }
