@@ -44,7 +44,7 @@ class Controller {
     Controller();
     Controller(Lp::Sys::Ctrl *controller);
     void update();
-    bool isHeld(Buttons inputs);
-    bool isPressed(Buttons inputs);
+    long isHeld(Buttons inputs);
+    long isPressed(Buttons inputs);
     
 };

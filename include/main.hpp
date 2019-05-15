@@ -31,7 +31,7 @@ enum Modes {
     NONE, FLY, EVENT_VIEWER, INPUT_VIEWER,  PLAYER_SWITCHER, END
 };
 
-void render(agl::DrawContext *drawContext, sead::TextWriter *textWriter);
+void renderEntrypoint(agl::DrawContext *drawContext, sead::TextWriter *textWriter);
 bool isTriggered(Lp::Sys::Ctrl *controller, unsigned long id);
 
 void drawBackground();
