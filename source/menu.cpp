@@ -15,23 +15,14 @@ void SimpleMenu::update() {
 
     // update entries
     std::list<MenuEntry*>::iterator it;
+    int i = 0;
     for (it = entries.begin(); it != entries.end(); ++it){
         MenuEntry* entry = *it;
         entry->update();
-    }
-
-    // handle selection
-    if(Collector::Control.isPressed(Controller::Buttons::LStick)){
-        int i = 0;
-        for (it = entries.begin(); it != entries.end(); ++it){
-            MenuEntry* entry = *it;
+        if(Collector::Control.isPressed(Controller::Buttons::LStick))
             if(i == selectedIndex)
-            {
                 entry->selected(this);
-                break;
-            }
-            i++;
-        }
+        i++;
     }
 }
 
